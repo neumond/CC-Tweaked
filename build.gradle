@@ -78,11 +78,18 @@ minecraft {
     accessTransformer file('src/main/resources/META-INF/accesstransformer.cfg')
 }
 
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
+sourceSets {
+    main.resources {
+        srcDir 'src/generated/resources'
+    }
+
+    processor {
+
+    }
 }
 
 repositories {
+    mavenCentral()
     maven {
         name "SquidDev"
         url "https://squiddev.cc/maven"
@@ -115,6 +122,8 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
 
     deployerJars "org.apache.maven.wagon:wagon-ssh:3.0.0"
+
+    processorImplementation 'com.google.auto.service:auto-service:1.0-rc7'
 }
 
 // Compile tasks
@@ -122,6 +131,19 @@ dependencies {
 javadoc {
     include "dan200/computercraft/api/**/*.java"
 }
+
+task luaJavadoc(type: Javadoc) {
+    description "Generates documentation for Java-side Lua functions."
+    group "documentation"
+
+    source = sourceSets.main.allJava
+    destinationDir = file("doc/javadoc")
+    classpath = sourceSets.main.compileClasspath
+
+    options.docletpath = sourceSets.processor.runtimeClasspath as List
+    options.doclet = "cc.tweaked.processor.LuaDoclet"
+}
+luaJavadoc.dependsOn compileProcessorJava
 
 jar {
     dependsOn javadoc
@@ -143,13 +165,11 @@ jar {
     from configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
 }
 
-[compileJava, compileTestJava].forEach {
+[compileJava, compileTestJava, compileProcessorJava].forEach {
     it.configure {
         options.compilerArgs << "-Xlint" << "-Xlint:-processing"
     }
 }
-
-
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.*
@@ -381,7 +401,7 @@ task checkRelease {
 }
 check.dependsOn checkRelease
 
-curseforge {
+/*curseforge {
     apiKey = project.hasProperty('curseForgeApiKey') ? project.curseForgeApiKey : ''
     project {
         id = '282001'
@@ -392,7 +412,7 @@ curseforge {
             incompatible "computercraft"
         }
     }
-}
+}*/
 
 publishing {
     publications {
