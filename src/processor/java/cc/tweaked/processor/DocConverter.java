@@ -212,7 +212,8 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
             return null;
         }
 
-        return super.visitStartElement( node, stringBuilder );
+        stringBuilder.append( "<" ).append( node.getName() ).append( node.isSelfClosing() ? " />" : ">" );
+        return null;
     }
 
     @Override
@@ -223,7 +224,9 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
             stringBuilder.append( "```" );
             return null;
         }
-        return super.visitEndElement( node, stringBuilder );
+
+        stringBuilder.append( "</" ).append( node.getName() ).append( ">" );
+        return null;
     }
 
     @Override
