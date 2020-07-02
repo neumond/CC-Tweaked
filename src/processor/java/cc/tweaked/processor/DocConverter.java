@@ -7,6 +7,7 @@
 package cc.tweaked.processor;
 
 import com.sun.source.doctree.*;
+import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.SimpleDocTreeVisitor;
 
@@ -17,11 +18,16 @@ import javax.tools.Diagnostic;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
 {
     private final Element owner;
     private final Environment environment;
+    private final DocTreePath path;
+    private final Function<Element, String> resolve;
+
+    private boolean inPre = false;
 
     private boolean hasParam = false;
     private final Map<String, List<? extends DocTree>> params = new HashMap<>();
@@ -29,20 +35,14 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     private boolean hasReturn = false;
     private List<? extends DocTree> returns;
 
-    public static String of( Environment env, Element owner, DocTree tree )
-    {
-        return new DocConverter( env, owner ).visit( tree, new StringBuilder() ).toString();
-    }
-
-    public static String of( Environment env, Element owner, Iterable<? extends DocTree> tree )
-    {
-        return new DocConverter( env, owner ).visit( tree, new StringBuilder() ).toString();
-    }
-
-    public DocConverter( Environment environment, Element owner )
+    public DocConverter( Environment environment, Element owner, Function<Element, String> resolve )
     {
         this.owner = owner;
         this.environment = environment;
+
+        DocCommentTree tree = environment.trees().getDocCommentTree( owner );
+        this.path = tree == null ? null : new DocTreePath( environment.trees().getPath( owner ), tree );
+        this.resolve = resolve;
     }
 
     public boolean hasParam()
@@ -87,6 +87,15 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     public Void visitLiteral( LiteralTree node, StringBuilder stringBuilder )
     {
         String body = node.getBody().getBody();
+
+        if( inPre )
+        {
+            // This is a terrible hack, but one which (sadly) works. We skip emitting backticks if we're within a pre
+            // block, as this will have inserted backticks already.
+            stringBuilder.append( body );
+            return null;
+        }
+
         switch( body )
         {
             case "nil":
@@ -117,8 +126,24 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     @Override
     public Void visitReference( ReferenceTree node, StringBuilder stringBuilder )
     {
-        // TODO: Resolve and map correctly!
-        stringBuilder.append( node.getSignature() );
+        Element referred = environment.trees().getElement( DocTreePath.getPath( path, node ) );
+        String name = node.getSignature();
+        if( referred == null )
+        {
+            environment.message( Diagnostic.Kind.ERROR, "Cannot resolve reference.", owner, node );
+            stringBuilder.append( node.getSignature() );
+            return null;
+        }
+
+        String alternative = resolve.apply( referred );
+        if( alternative == null )
+        {
+            environment.message( Diagnostic.Kind.ERROR, "Cannot convert " + referred + " into a Lua reference.", owner, node );
+            stringBuilder.append( node.getSignature() );
+            return null;
+        }
+
+        stringBuilder.append( alternative );
         return null;
     }
 
@@ -188,8 +213,15 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
                 return null;
         }
 
-        stringBuilder.append( "@" ).append( actualName ).append( " " );
-        visit( node.getContent(), stringBuilder );
+        stringBuilder.append( "@" ).append( actualName );
+
+        List<? extends DocTree> children = node.getContent();
+        if( children.isEmpty() || children.get( 0 ).getKind() != DocTree.Kind.TEXT || !((TextTree) children.get( 0 )).getBody().startsWith( "[" ) )
+        {
+            stringBuilder.append( " " );
+        }
+
+        visit( children, stringBuilder );
         stringBuilder.append( "\n" );
         return null;
     }
@@ -197,8 +229,13 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     @Override
     public Void visitSee( SeeTree node, StringBuilder stringBuilder )
     {
+        List<? extends DocTree> ref = node.getReference();
+        if( ref.isEmpty() ) return null;
+
         stringBuilder.append( "@see " );
-        visit( node.getReference(), stringBuilder );
+        visit( ref.get( 0 ), stringBuilder );
+        stringBuilder.append( " " );
+        visit( ref.subList( 1, ref.size() ), stringBuilder );
         stringBuilder.append( "\n" );
         return null;
     }
@@ -208,6 +245,7 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     {
         if( node.getName().contentEquals( "pre" ) )
         {
+            inPre = true;
             stringBuilder.append( "```lua" );
             return null;
         }
@@ -221,6 +259,7 @@ public class DocConverter extends SimpleDocTreeVisitor<Void, StringBuilder>
     {
         if( node.getName().contentEquals( "pre" ) )
         {
+            inPre = false;
             stringBuilder.append( "```" );
             return null;
         }

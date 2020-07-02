@@ -28,6 +28,7 @@ import static dan200.computercraft.core.apis.TableHelper.*;
 
 /**
  * @cc.module http
+ * @hidden
  */
 public class HTTPAPI implements ILuaAPI
 {

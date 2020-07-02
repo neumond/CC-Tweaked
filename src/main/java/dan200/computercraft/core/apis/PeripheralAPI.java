@@ -24,6 +24,7 @@ import java.util.*;
 
 /**
  * @cc.module peripheral
+ * @hidden
  */
 public class PeripheralAPI implements ILuaAPI, IAPIEnvironment.IPeripheralChangeListener
 {

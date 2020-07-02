@@ -15,6 +15,10 @@ import dan200.computercraft.shared.turtle.core.TurtleCraftCommand;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+/**
+ * @cc.module workbench
+ * @hidden
+ */
 public class CraftingTablePeripheral implements IPeripheral
 {
     private final ITurtleAccess turtle;

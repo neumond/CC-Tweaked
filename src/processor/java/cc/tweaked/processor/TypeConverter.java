@@ -105,13 +105,43 @@ public class TypeConverter extends SimpleTypeVisitor8<StringBuilder, StringBuild
         }
         else if( is( type, Map.class ) )
         {
-            // TODO: Better handling
-            return stringBuilder.append( "table" );
+            TypeMirror key = getTypeArg( t, 0 );
+            TypeMirror value = getTypeArg( t, 1 );
+            if( key == null && value == null ) return stringBuilder.append( "table" );
+
+            stringBuilder.append( "{ [" );
+            if( key == null )
+            {
+                stringBuilder.append( "any" );
+            }
+            else
+            {
+                visit( key, stringBuilder );
+            }
+            stringBuilder.append( "] = " );
+            if( value == null )
+            {
+                stringBuilder.append( "any" );
+            }
+            else
+            {
+                visit( value, stringBuilder );
+            }
+            return stringBuilder.append( " }" );
         }
-        else if( is( type, List.class ) || is( type, Collection.class ) ) // TODO: Subclass instead!
+        else if( is( type, List.class ) || is( type, Collection.class ) ) // TODO: Check for subclasses.
         {
-            // TODO: Better handling
-            return stringBuilder.append( "table" );
+            TypeMirror element = getTypeArg( t, 0 );
+            if( element == null )
+            {
+                return stringBuilder.append( "table" );
+            }
+            else
+            {
+                stringBuilder.append( "{ " );
+                visit( element, stringBuilder );
+                return stringBuilder.append( "... }" );
+            }
         }
         else if( is( type, "dan200.computercraft.api.lua.MethodResult" ) )
         {
@@ -128,5 +158,12 @@ public class TypeConverter extends SimpleTypeVisitor8<StringBuilder, StringBuild
     {
         env.message( Diagnostic.Kind.ERROR, "Cannot handle type " + e, element );
         return stringBuilder;
+    }
+
+    private static TypeMirror getTypeArg( DeclaredType ty, int index )
+    {
+        if( ty.getTypeArguments().size() < index ) return null;
+        TypeMirror arg = ty.getTypeArguments().get( index );
+        return arg.getKind() == TypeKind.WILDCARD ? null : arg;
     }
 }

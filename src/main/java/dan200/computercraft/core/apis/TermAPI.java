@@ -34,11 +34,21 @@ public class TermAPI extends TermMethods implements ILuaAPI
         return new String[] { "term" };
     }
 
+    /**
+     * Get the default palette value for a colour.
+     *
+     * @param colour The colour whose palette should be fetched.
+     * @return The RGB values.
+     * @throws LuaException When given an invalid colour.
+     * @cc.treturn number The red channel, will be between 0 and 1.
+     * @cc.treturn number The green channel, will be between 0 and 1.
+     * @cc.treturn number The blue channel, will be between 0 and 1.
+     */
     @LuaFunction( { "nativePaletteColour", "nativePaletteColor" } )
-    public final Object[] nativePaletteColour( int colourArg ) throws LuaException
+    public final Object[] nativePaletteColour( int colour ) throws LuaException
     {
-        int colour = 15 - parseColour( colourArg );
-        Colour c = Colour.fromInt( colour );
+        int actualColour = 15 - parseColour( colour );
+        Colour c = Colour.fromInt( actualColour );
 
         float[] rgb = c.getRGB();
 

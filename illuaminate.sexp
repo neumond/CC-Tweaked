@@ -81,15 +81,20 @@
    /doc/stub/os.lua
    /doc/stub/term.lua
    /doc/stub/turtle.lua
+   ; Java generated APIs
+   /doc/javadoc/fs.lua
+   /doc/javadoc/http.lua
+   /doc/javadoc/os.lua
+   /doc/javadoc/turtle.lua
    ; Peripherals
-   /doc/stub/drive.lua
-   /doc/stub/modem.lua
-   /doc/stub/printer.lua
+   /doc/javadoc/drive.lua
+   /doc/javadoc/speaker.lua
+   /doc/javadoc/printer.lua
    ; Lua APIs
    /src/main/resources/*/computercraft/lua/rom/apis/io.lua
    /src/main/resources/*/computercraft/lua/rom/apis/window.lua)
 
-  (linters -doc:undocumented -doc:undocumented-arg))
+  (linters -doc:undocumented -doc:undocumented-arg -doc:undocumented-return))
 
 ;; These currently rely on unknown references.
 (at

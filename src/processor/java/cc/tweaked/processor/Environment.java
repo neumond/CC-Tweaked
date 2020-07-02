@@ -6,9 +6,12 @@
 
 package cc.tweaked.processor;
 
+import com.sun.source.doctree.DocTree;
+import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTrees;
 import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +24,7 @@ import javax.tools.Diagnostic;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class Environment
+public final class Environment
 {
     public static final String LUA_FUNCTION = "dan200.computercraft.api.lua.LuaFunction";
     public static final String PERIPHERAL = "dan200.computercraft.api.peripheral.IPeripheral";
@@ -100,6 +103,11 @@ public class Environment
     public void message( @Nonnull Diagnostic.Kind kind, @Nonnull String message, @Nonnull Element element )
     {
         reporter.print( kind, element, message );
+    }
+
+    public void message( @Nonnull Diagnostic.Kind kind, @Nonnull String message, @Nonnull Element element, @NonNull DocTree tree )
+    {
+        reporter.print( kind, DocTreePath.getPath( trees().getPath( element ), trees().getDocCommentTree( element ), tree ), message );
     }
 
     @Nonnull

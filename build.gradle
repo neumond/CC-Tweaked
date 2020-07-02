@@ -33,6 +33,8 @@ version = mod_version
 group = "org.squiddev"
 archivesBaseName = "cc-tweaked-${mc_version}"
 
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
 minecraft {
     runs {
         client {

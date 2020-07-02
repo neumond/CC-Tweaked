@@ -6,6 +6,7 @@
 
 package cc.tweaked.processor;
 
+import com.google.auto.common.MoreElements;
 import com.sun.source.doctree.DocTree;
 
 import javax.annotation.Nonnull;
@@ -27,11 +28,13 @@ public class Emitter
 
     private final Environment env;
     private final Map<TypeElement, ClassInfo> types;
+    private final Map<ExecutableElement, MethodInfo> methods;
 
     public Emitter( Environment env, Map<ExecutableElement, MethodInfo> methods, Map<TypeElement, ClassInfo> types )
     {
         this.env = env;
         this.types = types;
+        this.methods = methods;
 
         for( MethodInfo method : methods.values() ) methodBuilder( method );
     }
@@ -55,8 +58,13 @@ public class Emitter
     {
         StringBuilder builder = new StringBuilder();
 
+        if( info.kind() == ClassInfo.Kind.TYPE )
+        {
+            builder.append( "--- @module " ).append( info.moduleName() ).append( "\n\n" );
+        }
+
         builder.append( "--[[- " );
-        new DocConverter( env, info.element() ).visit( info.doc(), builder );
+        new DocConverter( env, info.element(), x -> resolve( info, x ) ).visit( info.doc(), builder );
 
         switch( info.kind() )
         {
@@ -67,8 +75,8 @@ public class Emitter
                 builder.append( "@module[module] " ).append( info.name() ).append( "\n]]\n" );
                 break;
             case TYPE:
-                builder.append( "@type " ).append( info.name() ).append( "\n]]\n" );
-                builder.append( "local " ).append( info.name().replace( '.', '_' ) ).append( " = {}\n" );
+                builder.append( "@type " ).append( info.typeName() ).append( "\n]]\n" );
+                builder.append( "local " ).append( info.typeName() ).append( " = {}\n" );
                 break;
         }
 
@@ -81,13 +89,13 @@ public class Emitter
         ClassInfo klass = resolveType( method.getEnclosingElement() );
         if( klass == null )
         {
-            // env.message( Diagnostic.Kind.NOTE, "Cannot find owner for " + info.name(), method );
+            env.message( Diagnostic.Kind.NOTE, "Cannot find owner for " + info.name(), method );
             return;
         }
 
         StringBuilder builder = modules.computeIfAbsent( klass, this::classBuilder );
 
-        DocConverter doc = new DocConverter( env, method );
+        DocConverter doc = new DocConverter( env, method, x -> resolve( klass, x ) );
         TypeConverter type = new TypeConverter( env, method );
 
         builder.append( "\n--[[- " );
@@ -126,13 +134,13 @@ public class Emitter
             builder.append( "\n" );
         }
 
-        // new DocConverter( env, method.element() ).visit( info.doc(), builder );
         builder.append( "]]\n" );
 
-        builder.append( "function " ).append( info.name() ).append( "(" ).append( signature ).append( ") end\n" );
+        String prefix = klass.typeName() == null ? "" : klass.typeName() + ".";
+        builder.append( "function " ).append( prefix ).append( info.name() ).append( "(" ).append( signature ).append( ") end\n" );
         for( String name : info.otherNames() )
         {
-            builder.append( name ).append( " = " ).append( info.name() ).append( "\n" );
+            builder.append( prefix ).append( name ).append( " = " ).append( prefix ).append( info.name() ).append( "\n" );
         }
     }
 
@@ -141,7 +149,6 @@ public class Emitter
         String name = element.getSimpleName().toString();
         TypeMirror type = element.asType();
         List<? extends DocTree> commentList = docs.getParams().get( name );
-        // String description = commentList == null ? null : DocConverter.of( env, element.getEnclosingElement(), commentList );
 
         if( Helpers.is( type, "dan200.computercraft.api.lua.ILuaContext" )
             || Helpers.is( type, "dan200.computercraft.api.peripheral.IComputerAccess" ) )
@@ -175,11 +182,35 @@ public class Emitter
 
         for( Map.Entry<ClassInfo, StringBuilder> module : modules.entrySet() )
         {
-            System.out.println( "Writing to " + new File( output, module.getKey().name() + ".lua" ) );
+            if( module.getKey().isHidden() ) continue;
+
             try( Writer writer = new BufferedWriter( new FileWriter( new File( output, module.getKey().name() + ".lua" ), StandardCharsets.UTF_8 ) ) )
             {
                 writer.write( module.getValue().toString() );
             }
+        }
+    }
+
+    public String resolve( ClassInfo context, Element element )
+    {
+        switch( element.getKind() )
+        {
+            case CLASS:
+            {
+                ClassInfo type = types.get( MoreElements.asType( element ) );
+                return type == null ? null : type.name();
+            }
+
+            case METHOD:
+            {
+                MethodInfo method = methods.get( MoreElements.asExecutable( element ) );
+                ClassInfo builder = resolveType( method.element().getEnclosingElement() );
+                if( builder == null ) return null;
+                return builder == context ? method.name() : builder.name() + "." + method.name();
+            }
+
+            default:
+                return null;
         }
     }
 }
