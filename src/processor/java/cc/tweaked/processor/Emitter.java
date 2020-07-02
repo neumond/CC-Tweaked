@@ -8,6 +8,9 @@ package cc.tweaked.processor;
 
 import com.google.auto.common.MoreElements;
 import com.sun.source.doctree.DocTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.LineMap;
+import com.sun.source.util.DocTrees;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +20,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +34,7 @@ public class Emitter
     private final Environment env;
     private final Map<TypeElement, ClassInfo> types;
     private final Map<ExecutableElement, MethodInfo> methods;
+    private final Path root = Paths.get( "." ).toAbsolutePath();
 
     public Emitter( Environment env, Map<ExecutableElement, MethodInfo> methods, Map<TypeElement, ClassInfo> types )
     {
@@ -101,6 +107,7 @@ public class Emitter
         builder.append( "\n--[[- " );
         doc.visit( info.doc(), builder );
         builder.append( "\n" );
+        writeSource( builder, method );
 
         String signature;
         if( !doc.hasParam() )
@@ -212,5 +219,17 @@ public class Emitter
             default:
                 return null;
         }
+    }
+
+    private void writeSource( StringBuilder builder, Element element )
+    {
+        DocTrees trees = env.trees();
+        CompilationUnitTree tree = trees.getPath( element ).getCompilationUnit();
+        LineMap map = tree.getLineMap();
+        long position = trees.getSourcePositions().getStartPosition( tree, trees.getTree( element ) );
+
+        Path current = Paths.get( tree.getSourceFile().getName() );
+        builder.append( "@source " ).append( root.relativize( current ).toString().replace( '\\', '/' ) ).append( ":" )
+            .append( map.getLineNumber( position ) ).append( "\n" );
     }
 }
