@@ -15,6 +15,9 @@ import dan200.computercraft.shared.util.StringUtil;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+/**
+ * @cc.module printer
+ */
 public class PrinterPeripheral implements IPeripheral
 {
     private final TilePrinter printer;

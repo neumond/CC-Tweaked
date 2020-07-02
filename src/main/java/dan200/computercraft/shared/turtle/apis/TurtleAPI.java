@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * @cc.module turtle
+ */
 public class TurtleAPI implements ILuaAPI
 {
     private final IAPIEnvironment environment;

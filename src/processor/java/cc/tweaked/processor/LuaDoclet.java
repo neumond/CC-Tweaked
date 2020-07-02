@@ -11,19 +11,21 @@ import jdk.javadoc.doclet.DocletEnvironment;
 import jdk.javadoc.doclet.Reporter;
 
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class LuaDoclet implements Doclet
 {
-    public static final String LUA_FUNCTION = "dan200.computercraft.api.lua.LuaFunction";
-    public static final String PERIPHERAL = "dan200.computercraft.api.peripheral.IPeripheral";
-    public static final String LUA_API = "dan200.computercraft.api.lua.ILuaAPI";
-
-    private String output;
-    private Locale locale;
+    private String output = ".";
     private Reporter reporter;
 
     private final Set<Option> options = Set.of(
@@ -35,7 +37,6 @@ public class LuaDoclet implements Doclet
     @Override
     public void init( Locale locale, Reporter reporter )
     {
-        this.locale = locale;
         this.reporter = reporter;
     }
 
@@ -63,24 +64,34 @@ public class LuaDoclet implements Doclet
         Environment env = Environment.of( docEnv, reporter );
         if( env == null ) return false;
 
-        List<MethodData> methods = docEnv.getSpecifiedElements().stream()
+        Map<ExecutableElement, MethodInfo> methods = docEnv.getSpecifiedElements().stream()
             .filter( x -> x.getKind() == ElementKind.CLASS ).map( TypeElement.class::cast )
             .flatMap( x -> x.getEnclosedElements().stream() )
 
             // Only allow instance methods. Static methods are "generic peripheral" ones, and so are unsuitable.
             .filter( x -> x.getKind() == ElementKind.METHOD ).map( ExecutableElement.class::cast )
-            .filter( x -> !x.getModifiers().contains( Modifier.STATIC ) )
+            .flatMap( x -> MethodInfo.of( env, x ).stream() )
+            .collect( Collectors.toMap( MethodInfo::element, Function.identity(), ( x, y ) -> {
+                throw new IllegalStateException( "Cannot merge terms" );
+            }, LinkedHashMap::new ) );
 
-            // Now find actual @LuaFunction methods!
-            .map( element -> {
-                AnnotationMirror mirror = Helpers.getAnnotation( element, env.getLuaFunction() );
-                if( mirror == null ) return null;
+        Map<TypeElement, ClassInfo> types = methods.keySet().stream()
+            .map( Element::getEnclosingElement )
+            .filter( TypeElement.class::isInstance ).map( TypeElement.class::cast )
+            .distinct()
+            .flatMap( x -> ClassInfo.of( env, x ).stream() )
+            .collect( Collectors.toMap( ClassInfo::element, Function.identity() ) );
 
-                return MethodData.of( env, element, mirror );
-            } ).filter( Objects::nonNull )
-            .collect( Collectors.toList() );
-
-        return true;
+        try
+        {
+            new Emitter( env, methods, types ).emit( new File( output ) );
+            return true;
+        }
+        catch( IOException e )
+        {
+            env.message( Diagnostic.Kind.ERROR, e.getMessage() );
+            return false;
+        }
     }
 
     private static class BasicOption implements Option
@@ -136,7 +147,7 @@ public class LuaDoclet implements Doclet
         @Override
         public boolean process( String option, List<String> arguments )
         {
-            if( arguments.size() != 1 ) return false;
+            if( arguments.isEmpty() ) return false;
             process.accept( arguments.get( 0 ) );
             return true;
         }

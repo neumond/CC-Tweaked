@@ -19,6 +19,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 import net.minecraftforge.items.wrapper.PlayerMainInvWrapper;
 
+/**
+ * @cc.module pocket
+ */
 public class PocketAPI implements ILuaAPI
 {
     private final PocketServerComputer computer;

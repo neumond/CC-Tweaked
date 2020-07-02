@@ -18,31 +18,23 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static cc.tweaked.processor.Helpers.is;
 
 public class TypeConverter extends SimpleTypeVisitor8<StringBuilder, StringBuilder>
 {
-    private static final TypeVisitor<StringBuilder, StringBuilder> INSTANCE = new TypeConverter( x -> {} );
+    private final Environment env;
+    private final Element element;
 
-    private final Consumer<String> error;
-
-    private TypeConverter( Consumer<String> error )
+    public TypeConverter( Environment env, Element element )
     {
-        this.error = error;
-    }
-
-    public static String of( TypeMirror mirror )
-    {
-        return INSTANCE.visit( mirror, new StringBuilder() ).toString();
+        this.env = env;
+        this.element = element;
     }
 
     public static String of( Environment env, Element element, TypeMirror mirror )
     {
-        return new TypeConverter( x -> env.message( Diagnostic.Kind.ERROR, x, element ) )
-            .visit( mirror, new StringBuilder() )
-            .toString();
+        return new TypeConverter( env, element ).visit( mirror, new StringBuilder() ).toString();
     }
 
     @Override
@@ -134,7 +126,7 @@ public class TypeConverter extends SimpleTypeVisitor8<StringBuilder, StringBuild
     @Override
     protected StringBuilder defaultAction( TypeMirror e, StringBuilder stringBuilder )
     {
-        error.accept( "Cannot handle type " + e );
+        env.message( Diagnostic.Kind.ERROR, "Cannot handle type " + e, element );
         return stringBuilder;
     }
 }

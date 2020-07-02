@@ -25,6 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static dan200.computercraft.api.lua.LuaValues.checkFinite;
 
+/**
+ * @cc.module speaker
+ */
 public abstract class SpeakerPeripheral implements IPeripheral
 {
     private long m_clock = 0;

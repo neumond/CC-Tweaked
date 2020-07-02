@@ -2,6 +2,7 @@
 
 (sources
   /doc/stub/
+  /doc/javadoc/
   /src/main/resources/*/computercraft/lua/bios.lua
   /src/main/resources/*/computercraft/lua/rom/
   /src/test/resources/test-rom)
@@ -17,6 +18,7 @@
 
   (library-path
     /doc/stub/
+    /doc/javadoc/
 
     /src/main/resources/*/computercraft/lua/rom/apis
     /src/main/resources/*/computercraft/lua/rom/apis/command
@@ -67,7 +69,7 @@
   (lint (allow-toplevel-global true)))
 
 ;; Silence some variable warnings in documentation stubs.
-(at /doc/stub
+(at (/doc/stub/ /doc/javadoc/)
   (linters -var:unused-global)
   (lint (allow-toplevel-global true)))
 

@@ -26,6 +26,9 @@ import java.util.Optional;
 
 import static dan200.computercraft.core.apis.TableHelper.*;
 
+/**
+ * @cc.module http
+ */
 public class HTTPAPI implements ILuaAPI
 {
     private final IAPIEnvironment m_apiEnvironment;

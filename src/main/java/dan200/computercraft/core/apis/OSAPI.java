@@ -26,7 +26,7 @@ import static dan200.computercraft.api.lua.LuaValues.checkFinite;
 /**
  * The {@link OSAPI} API supports
  *
- * @cc.api os
+ * @cc.module os
  */
 public class OSAPI implements ILuaAPI
 {

@@ -14,6 +14,9 @@ import dan200.computercraft.shared.util.Colour;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @cc.module term
+ */
 public class TermAPI extends TermMethods implements ILuaAPI
 {
     private final Terminal terminal;

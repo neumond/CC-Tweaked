@@ -18,6 +18,9 @@ import net.minecraft.item.ItemStack;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+/**
+ * @cc.module drive
+ */
 public class DiskDrivePeripheral implements IPeripheral
 {
     private final TileDiskDrive diskDrive;

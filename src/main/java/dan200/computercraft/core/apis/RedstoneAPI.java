@@ -10,6 +10,9 @@ import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.core.computer.ComputerSide;
 
+/**
+ * @cc.module redstone
+ */
 public class RedstoneAPI implements ILuaAPI
 {
     private final IAPIEnvironment environment;

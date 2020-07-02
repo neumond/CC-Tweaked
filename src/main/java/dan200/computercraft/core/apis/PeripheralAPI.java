@@ -22,6 +22,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
+/**
+ * @cc.module peripheral
+ */
 public class PeripheralAPI implements ILuaAPI, IAPIEnvironment.IPeripheralChangeListener
 {
     private class PeripheralWrapper extends ComputerAccess

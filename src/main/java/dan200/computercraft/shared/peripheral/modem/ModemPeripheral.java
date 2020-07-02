@@ -20,6 +20,9 @@ import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * @cc.module modem
+ */
 public abstract class ModemPeripheral implements IPeripheral, IPacketSender, IPacketReceiver
 {
     private IPacketNetwork m_network;

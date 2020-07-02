@@ -25,6 +25,9 @@ import static dan200.computercraft.core.apis.IAPIEnvironment.TIMER_EVENT;
 import static dan200.computercraft.core.apis.http.websocket.Websocket.CLOSE_EVENT;
 import static dan200.computercraft.core.apis.http.websocket.Websocket.MESSAGE_EVENT;
 
+/**
+ * @cc.module http.Websocket
+ */
 public class WebsocketHandle implements Closeable
 {
     private final Websocket websocket;
