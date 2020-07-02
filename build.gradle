@@ -403,7 +403,7 @@ task checkRelease {
 }
 check.dependsOn checkRelease
 
-/*curseforge {
+curseforge {
     apiKey = project.hasProperty('curseForgeApiKey') ? project.curseForgeApiKey : ''
     project {
         id = '282001'
@@ -414,7 +414,7 @@ check.dependsOn checkRelease
             incompatible "computercraft"
         }
     }
-}*/
+}
 
 publishing {
     publications {
