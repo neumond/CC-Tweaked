@@ -16,6 +16,8 @@ import javax.annotation.Nonnull;
 import java.util.Optional;
 
 /**
+ * The printer peripheral allows pages and books to be printed.
+ *
  * @cc.module printer
  */
 public class PrinterPeripheral implements IPeripheral

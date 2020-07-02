@@ -29,6 +29,8 @@ import java.util.OptionalLong;
 import java.util.function.Function;
 
 /**
+ * The FS API allows you to manipulate files and the filesystem.
+ *
  * @cc.module fs
  */
 public class FSAPI implements ILuaAPI

@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
+ * The turtle API allows you to control your turtle.
+ *
  * @cc.module turtle
  */
 public class TurtleAPI implements ILuaAPI
@@ -275,6 +277,7 @@ public class TurtleAPI implements ILuaAPI
      * The selected slot is determines what slot actions like {@link #drop} or {@link #getItemCount} act on.
      *
      * @param slot The slot to select.
+     * @return The turtle command result.
      * @throws LuaException If the slot is out of range.
      * @see #getSelectedSlot
      */

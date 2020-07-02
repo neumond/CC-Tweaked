@@ -15,6 +15,8 @@ import dan200.computercraft.shared.util.Colour;
 import javax.annotation.Nonnull;
 
 /**
+ * The Terminal API provides functions for writing text to the terminal and monitors, and drawing ASCII graphics.
+ *
  * @cc.module term
  */
 public class TermAPI extends TermMethods implements ILuaAPI

@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static dan200.computercraft.api.lua.LuaValues.checkFinite;
 
 /**
+ * Speakers allow playing notes and other sounds.
+ *
  * @cc.module speaker
  */
 public abstract class SpeakerPeripheral implements IPeripheral

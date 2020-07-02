@@ -157,6 +157,8 @@ public abstract class WiredModemPeripheral extends ModemPeripheral implements IW
      * @param computer  The calling computer.
      * @param context   The Lua context we're executing in.
      * @param arguments Arguments to this computer.
+     * @return The peripheral's result.
+     * @throws LuaException (hidden) If the method throws an error.
      * @cc.tparam string remoteName The name of the peripheral to invoke the method on.
      * @cc.tparam string method The name of the method
      * @cc.param ...      Additional arguments to pass to the method

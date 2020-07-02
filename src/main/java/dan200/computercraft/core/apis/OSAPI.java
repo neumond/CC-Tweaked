@@ -24,7 +24,7 @@ import java.util.*;
 import static dan200.computercraft.api.lua.LuaValues.checkFinite;
 
 /**
- * The {@link OSAPI} API supports
+ * The {@link OSAPI} API allows interacting with the current computer.
  *
  * @cc.module os
  */
