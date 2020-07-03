@@ -84,10 +84,6 @@ sourceSets {
     main.resources {
         srcDir 'src/generated/resources'
     }
-
-    processor {
-
-    }
 }
 
 repositories {
@@ -102,6 +98,7 @@ configurations {
     shade
     compile.extendsFrom shade
     deployerJars
+    cctJavadoc
 }
 
 dependencies {
@@ -125,7 +122,7 @@ dependencies {
 
     deployerJars "org.apache.maven.wagon:wagon-ssh:3.0.0"
 
-    processorImplementation 'com.google.auto.service:auto-service:1.0-rc7'
+    cctJavadoc 'cc.tweaked:cct-javadoc:1.0.0'
 }
 
 // Compile tasks
@@ -142,10 +139,14 @@ task luaJavadoc(type: Javadoc) {
     destinationDir = file("doc/javadoc")
     classpath = sourceSets.main.compileClasspath
 
-    options.docletpath = sourceSets.processor.runtimeClasspath as List
-    options.doclet = "cc.tweaked.processor.LuaDoclet"
+    options.docletpath = configurations.cctJavadoc.files as List
+    options.doclet = "cc.tweaked.javadoc.LuaDoclet"
+
+    // Attempt to run under Java 11 (any Java >= 9 will work though).
+    if(System.getProperty("java.version").startsWith("1.") && project.property("java11Home")) {
+        executable = "${project.property("java11Home")}/bin/javadoc"
+    }
 }
-luaJavadoc.dependsOn compileProcessorJava
 
 jar {
     dependsOn javadoc
@@ -167,7 +168,7 @@ jar {
     from configurations.shade.collect { it.isDirectory() ? it : zipTree(it) }
 }
 
-[compileJava, compileTestJava, compileProcessorJava].forEach {
+[compileJava, compileTestJava].forEach {
     it.configure {
         options.compilerArgs << "-Xlint" << "-Xlint:-processing"
     }
