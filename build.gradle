@@ -143,8 +143,9 @@ task luaJavadoc(type: Javadoc) {
     options.doclet = "cc.tweaked.javadoc.LuaDoclet"
 
     // Attempt to run under Java 11 (any Java >= 9 will work though).
-    if(System.getProperty("java.version").startsWith("1.") && project.hasProperty("java11Home")) {
-        executable = "${project.property("java11Home")}/bin/javadoc"
+    if(System.getProperty("java.version").startsWith("1.")
+        && (System.getenv("JAVA_HOME_11_X64") != null || project.hasProperty("java11Home"))) {
+        executable = "${System.getenv("JAVA_HOME_11_X64") ?: project.property("java11Home")}/bin/javadoc"
     }
 }
 

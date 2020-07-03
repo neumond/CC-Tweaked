@@ -10,13 +10,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Java 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-
     - name: Set up Java 8
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v1.3
       with:
         java-version: 8
 
@@ -28,9 +23,6 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Goodness knows what I'm doing
-      run: env
-
     - name: Build with Gradle
       run: ./gradlew build --no-daemon || ./gradlew build --no-daemon
 
@@ -40,15 +32,8 @@ jobs:
         name: CC-Tweaked
         path: build/libs
 
-    - name: Upload Coverage
-      run: bash <(curl -s https://codecov.io/bash)
-
-  lint-lua:
-    name: Lint Lua
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
+    - name: Generate Java documentation stubs
+      run: ./gradlew luaJavadoc --no-daemon
 
     - name: Lint Lua code
       run: |
@@ -59,3 +44,6 @@ jobs:
 
     - name: Check whitespace
       run: python3 tools/check-lines.py
+
+    - name: Upload Coverage
+      run: bash <(curl -s https://codecov.io/bash)
